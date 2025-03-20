@@ -15,7 +15,7 @@ class SplashScreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: Text(
-          "Stray Care",
+          "PAW RESCUE",
           style: GoogleFonts.poppins(fontSize: 50, fontWeight: FontWeight.bold),
         ),
       ),
