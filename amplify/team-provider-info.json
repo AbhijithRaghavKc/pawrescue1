@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-pawrescue-dev-ccffd-authRole",
+      "UnauthRoleArn": "arn:aws:iam::060795924650:role/amplify-pawrescue-dev-ccffd-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::060795924650:role/amplify-pawrescue-dev-ccffd-authRole",
+      "Region": "eu-west-1",
+      "DeploymentBucketName": "amplify-pawrescue-dev-ccffd-deployment",
+      "UnauthRoleName": "amplify-pawrescue-dev-ccffd-unauthRole",
+      "StackName": "amplify-pawrescue-dev-ccffd",
+      "StackId": "arn:aws:cloudformation:eu-west-1:060795924650:stack/amplify-pawrescue-dev-ccffd/7bba5fc0-0bc5-11f0-88ec-0a248c9bbdfd",
+      "AmplifyAppId": "d10okwryugpprb"
+    },
+    "categories": {
+      "auth": {
+        "pawrescuef2d94645": {}
+      }
+    }
+  }
+}
