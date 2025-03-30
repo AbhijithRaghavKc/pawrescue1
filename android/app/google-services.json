@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "797515232441",
+    "project_id": "pawrescue-53d25",
+    "storage_bucket": "pawrescue-53d25.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:797515232441:android:e6572495a30c00080b1768",
+        "android_client_info": {
+          "package_name": "com.example.pawrescue1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBWP3Wrn2XfrI2jSRk5knrwRs_vo1VDN7c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

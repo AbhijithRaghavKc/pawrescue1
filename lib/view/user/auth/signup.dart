@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:pawrescue1/view/const/custom_colors.dart';
 import 'package:pawrescue1/view/user/auth/confirm.dart';
 import 'package:pawrescue1/view/user/auth/signin.dart';
-import 'package:pawrescue1/view/user/home.dart';
 
 class UserSignUp extends StatefulWidget {
   const UserSignUp({super.key});
@@ -19,12 +18,11 @@ class _UserSignUpScreenState extends State<UserSignUp> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _isLoading = false; // Added loading state
 
   bool isValidEmail(String email) {
     final emailRegex =
         RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
-    print(emailRegex.hasMatch(email));
-    print('******');
     return emailRegex.hasMatch(email);
   }
 
@@ -94,8 +92,12 @@ class _UserSignUpScreenState extends State<UserSignUp> {
                             validator: (value) {
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your password';
-                              } else if (value.length < 6) {
-                                return 'Password must be at least 6 characters';
+                              } else if (value.length < 8) {
+                                return 'Password must be at least 8 characters';
+                              } else if (!RegExp(
+                                      r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])')
+                                  .hasMatch(value)) {
+                                return 'Password must contain an uppercase letter, a number, and a special character';
                               }
                               return null;
                             },
@@ -105,22 +107,25 @@ class _UserSignUpScreenState extends State<UserSignUp> {
                             width: double.infinity,
                             child: ElevatedButton(
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: CustomColors.buttonColor1,
+                                backgroundColor: CustomColors
+                                    .buttonColor1, // Use MaterialStateProperty.all() if needed
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(30),
                                 ),
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 16),
                               ),
-                              onPressed: () {
-                                signUp();
-                              },
-                              child: const Text(
-                                "Sign Up",
-                                style: TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold),
-                              ),
+                              onPressed: _isLoading ? null : () => signUp(),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : const Text(
+                                      "Sign Up",
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                             ),
                           ),
                           const SizedBox(height: 10),
@@ -162,6 +167,10 @@ class _UserSignUpScreenState extends State<UserSignUp> {
 
   Future<void> signUp() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       final email = _emailController.text.trim();
       final password = _passwordController.text.trim();
 
@@ -173,6 +182,10 @@ class _UserSignUpScreenState extends State<UserSignUp> {
             AuthUserAttributeKey.email: email,
           }),
         );
+
+        setState(() {
+          _isLoading = false;
+        });
 
         if (result.isSignUpComplete) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -190,10 +203,14 @@ class _UserSignUpScreenState extends State<UserSignUp> {
             builder: (context) => ConfirmSignUpScreen(email: email),
           ));
         }
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error signing up: $e')),
+      } on AuthException catch (e) {
+        print(e);
+         ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.message)),
         );
+        setState(() {
+          _isLoading = false;
+        });
       }
     }
   }

@@ -1,23 +1,33 @@
 import 'package:amplify_auth_cognito/amplify_auth_cognito.dart';
 import 'package:amplify_core/amplify_core.dart';
+import 'package:amplify_storage_s3/amplify_storage_s3.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:pawrescue1/amplifyconfiguration.dart';
+import 'package:pawrescue1/firebase_options.dart';
 import 'package:pawrescue1/view/splash.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   configureAmplify();
   runApp(MyApp());
 }
 
 final _amplifyInstance = Amplify;
 
-void configureAmplify() {
+void configureAmplify() async {
   try {
-    AmplifyAuthCognito _amplifyCognito = AmplifyAuthCognito();
-    _amplifyInstance.addPlugin(_amplifyCognito);
-    _amplifyInstance.configure(amplifyconfig);
-    print('Configured');
+    final authPlugin = AmplifyAuthCognito();
+    final storagePlugin = AmplifyStorageS3();
+
+    await _amplifyInstance.addPlugins([authPlugin, storagePlugin]);
+
+    await _amplifyInstance.configure(amplifyconfig);
+
+    print('Amplify successfully configured');
   } catch (e) {
     print(e);
   }
