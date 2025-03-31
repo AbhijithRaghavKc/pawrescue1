@@ -1,6 +1,8 @@
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:pawrescue1/view/const/custom_colors.dart';
 import 'package:pawrescue1/view/user/adoption.dart';
+import 'package:pawrescue1/view/user/auth/signup.dart';
 import 'package:pawrescue1/view/user/donation.dart';
 import 'package:pawrescue1/view/user/drawer/about_us.dart';
 import 'package:pawrescue1/view/user/drawer/help.dart';
@@ -96,15 +98,36 @@ class HomeScreen extends StatelessWidget {
               ListTile(
                 leading: const Icon(Icons.logout),
                 title: const Text('Logout'),
-                onTap: () {},
+                onTap: () async {
+                  try {
+                    print('=======');
+                    // Sign out from AWS Cognito
+                    await Amplify.Auth.signOut();
+
+                    // Navigate to login/signup screen
+                    Navigator.of(context).pushReplacement(MaterialPageRoute(
+                        builder: (context) => const UserSignUp()));
+
+                    // Optional: Show success message
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Logged out successfully')),
+                    );
+                  } catch (e) {
+                    // Handle errors
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text('Error logging out: ${e.toString()}')),
+                    );
+                  }
+                },
               ),
             ],
           ),
         ),
-        body: const TabBarView(
+        body: TabBarView(
           children: [
-            ReportPage(),
-            DonationPage(),
+            const ReportPage(),
+            const DonationPage(),
             AdoptionPage(),
           ],
         ),

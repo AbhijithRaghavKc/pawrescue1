@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:pawrescue1/view/const/custom_colors.dart';
 
 class JoinRescueTeamPage extends StatefulWidget {
@@ -10,9 +12,87 @@ class JoinRescueTeamPage extends StatefulWidget {
 
 class _JoinRescueTeamPageState extends State<JoinRescueTeamPage> {
   final _formKey = GlobalKey<FormState>();
+  final _firestore = FirebaseFirestore.instance;
+  bool _isSubmitting = false;
+  
+  // Form fields
   String name = '';
   String email = '';
   String phone = '';
+  String? userId;
+  String? userEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchCurrentUser();
+  }
+
+  Future<void> _fetchCurrentUser() async {
+    try {
+      final user = await Amplify.Auth.getCurrentUser();
+      final attributes = await Amplify.Auth.fetchUserAttributes();
+      
+      setState(() {
+        userId = user.userId;
+        // Extract email from attributes
+        userEmail = attributes.firstWhere(
+          (attr) => attr.userAttributeKey.key == AuthUserAttributeKey.email.key,
+          orElse: () => AuthUserAttribute(
+            userAttributeKey: AuthUserAttributeKey.email,
+            value: '',
+          ),
+        ).value;
+      });
+    } catch (e) {
+      print('Error fetching user: $e');
+    }
+  }
+
+  Future<void> _submitApplication() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    setState(() => _isSubmitting = true);
+
+    try {
+      // Use the email from form if provided, otherwise use Cognito email
+      final applicationEmail = email.isNotEmpty ? email : userEmail ?? '';
+      
+      await _firestore.collection('rescue_team_applications').add({
+        'userId': userId,
+        'name': name,
+        'email': applicationEmail,
+        'phone': phone,
+        'status': 'pending',
+        'submittedAt': FieldValue.serverTimestamp(),
+        'updatedAt': FieldValue.serverTimestamp(),
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Application submitted successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
+      // Clear form after submission
+      _formKey.currentState?.reset();
+      setState(() {
+        name = '';
+        email = '';
+        phone = '';
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error submitting application: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      setState(() => _isSubmitting = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,26 +124,34 @@ class _JoinRescueTeamPageState extends State<JoinRescueTeamPage> {
                 validator: (value) =>
                     value!.isEmpty ? 'Please enter your name' : null,
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: 'Email',
-                  border: OutlineInputBorder(
+                  hintText: userEmail ?? '', // Show Cognito email as hint
+                  border: const OutlineInputBorder(
                     borderSide: BorderSide(color: CustomColors.buttonColor1),
                   ),
-                  enabledBorder: OutlineInputBorder(
+                  enabledBorder: const OutlineInputBorder(
                     borderSide: BorderSide(color: CustomColors.buttonColor1),
                   ),
-                  focusedBorder: OutlineInputBorder(
+                  focusedBorder: const OutlineInputBorder(
                     borderSide: BorderSide(
                         color: CustomColors.buttonColor1, width: 2.0),
                   ),
                 ),
                 onChanged: (value) => email = value,
-                validator: (value) =>
-                    value!.contains('@') ? null : 'Enter a valid email',
+                validator: (value) {
+                  if (value!.isEmpty && userEmail == null) {
+                    return 'Please enter your email';
+                  }
+                  if (value!.isNotEmpty && !value.contains('@')) {
+                    return 'Enter a valid email';
+                  }
+                  return null;
+                },
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextFormField(
                 decoration: const InputDecoration(
                   labelText: 'Phone',
@@ -86,21 +174,19 @@ class _JoinRescueTeamPageState extends State<JoinRescueTeamPage> {
               const SizedBox(height: 20),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                    backgroundColor: CustomColors.buttonColor1),
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Application Submitted')),
-                    );
-                  }
-                },
-                child: const Text(
-                  'Submit',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                  backgroundColor: CustomColors.buttonColor1,
+                  minimumSize: const Size(double.infinity, 50),
                 ),
+                onPressed: _isSubmitting ? null : _submitApplication,
+                child: _isSubmitting
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                        'Submit Application',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
               ),
             ],
           ),

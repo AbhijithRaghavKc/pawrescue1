@@ -163,6 +163,9 @@ class _ReportPageState extends State<ReportPage> {
     });
 
     try {
+      final user = await Amplify.Auth.getCurrentUser();
+      final userId = user.userId; // This is the Cognito user ID
+      print(userId);
       // **Generate unique file name**
       String fileName = "reports/${DateTime.now().millisecondsSinceEpoch}.jpg";
 
@@ -183,13 +186,15 @@ class _ReportPageState extends State<ReportPage> {
 
       // **Step 3: Save Data to Firestore**
       await FirebaseFirestore.instance
-          .collection('user')
-          .doc(uid)
+          .collection('users')
+          .doc(userId)
           .collection('reports')
           .add({
         'location': _locationController.text,
         'condition': _conditionController.text,
         'imageUrl': imageUrl,
+        'status': 'pending',
+        'userId': userId,
         'timestamp': FieldValue.serverTimestamp(),
       });
 

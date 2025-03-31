@@ -54,9 +54,45 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
-        child: Text(
-          "PAW RESCUE",
-          style: GoogleFonts.poppins(fontSize: 50, fontWeight: FontWeight.bold),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Logo or Icon
+            Container(
+              height: 120,
+              width: 120,
+              decoration: BoxDecoration(
+                color:  const Color.fromRGBO(144, 136, 228, 1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.pets,
+                color: const Color.fromRGBO(144, 136, 228, 1),
+                size: 80,
+              ),
+            ),
+            const SizedBox(height: 24),
+
+            // App Title
+            Text(
+              "Paw Rescue",
+              style: GoogleFonts.poppins(
+                fontSize: 48,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // Tagline
+            Text(
+              "Every Paw Matters!",
+              style: GoogleFonts.poppins(
+                fontSize: 18,
+                color: Colors.white70,
+              ),
+            ),
+          ],
         ),
       ),
     );

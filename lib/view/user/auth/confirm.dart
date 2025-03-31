@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
 import 'package:pawrescue1/view/const/custom_colors.dart';
+import 'package:pawrescue1/view/user/auth/signin.dart';
 import 'package:pawrescue1/view/user/home.dart';
 
 class ConfirmSignUpScreen extends StatefulWidget {
@@ -66,7 +67,7 @@ class _ConfirmSignUpScreenState extends State<ConfirmSignUpScreen> {
       ),
     );
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (context) => HomeScreen()),
+      MaterialPageRoute(builder: (context) => UserSignIn()),
     );
   }
 

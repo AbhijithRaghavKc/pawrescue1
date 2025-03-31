@@ -1,9 +1,13 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:amplify_flutter/amplify_flutter.dart';
+import 'package:pawrescue1/admin/adhome.dart';
 import 'package:pawrescue1/view/const/custom_colors.dart';
 import 'package:pawrescue1/view/user/auth/signup.dart';
 import 'package:pawrescue1/view/user/home.dart';
+
+String email = "kcabhi935@gmail.com";
+String password = '123456789';
 
 class UserSignIn extends StatefulWidget {
   const UserSignIn({super.key});
@@ -22,7 +26,11 @@ class _UserSignInScreenState extends State<UserSignIn> {
     setState(() {
       _isLoading = true;
     });
-
+if (_emailController.text == email &&
+        _passwordController.text == password) {
+      Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => AdminHomeScreen()));
+    }
     try {
       final result = await Amplify.Auth.signIn(
         username: _emailController.text.trim(),
