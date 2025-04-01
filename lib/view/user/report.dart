@@ -1,11 +1,11 @@
 import 'dart:io';
 import 'package:amplify_flutter/amplify_flutter.dart';
-import 'package:amplify_storage_s3/amplify_storage_s3.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:geocoding/geocoding.dart' as geocoding;
 import 'package:image_picker/image_picker.dart';
 import 'package:pawrescue1/view/const/custom_colors.dart';
-import 'package:pawrescue1/view/splash.dart';
+import 'package:location/location.dart';
 
 class ReportPage extends StatefulWidget {
   const ReportPage({Key? key}) : super(key: key);
@@ -19,6 +19,9 @@ class _ReportPageState extends State<ReportPage> {
   final TextEditingController _conditionController = TextEditingController();
   dynamic _selectedImage;
   bool _isLoading = false;
+
+  final Location _location = Location(); // Create an instance of Location
+  late LocationData _currentLocation;
 
   @override
   void dispose() {
@@ -40,6 +43,11 @@ class _ReportPageState extends State<ReportPage> {
           TextField(
             controller: _locationController,
             decoration: InputDecoration(
+              icon: IconButton(
+                  onPressed: () {
+                    getCurrentLocation();
+                  },
+                  icon: Icon(Icons.location_on)),
               labelText: 'Location',
               border: OutlineInputBorder(
                 borderSide: BorderSide(color: CustomColors.buttonColor1),
@@ -72,7 +80,6 @@ class _ReportPageState extends State<ReportPage> {
             maxLines: 3,
           ),
           const SizedBox(height: 16),
-
           // **Container for Image Preview**
           Container(
             width: MediaQuery.of(context).size.width,
@@ -104,12 +111,8 @@ class _ReportPageState extends State<ReportPage> {
                       ),
                     ],
                   )
-                : Image.file(
-                    _selectedImage!,
-                    fit: BoxFit.cover,
-                  ), // Show image
+                : Image.file(_selectedImage!),
           ),
-
           const Spacer(),
           Center(
             child: ElevatedButton(
@@ -146,7 +149,62 @@ class _ReportPageState extends State<ReportPage> {
     }
   }
 
-  // **Upload Image to AWS S3 and Store Data**
+  Future<void> getCurrentLocation() async {
+    try {
+      // Request permission to access the location
+      bool serviceEnabled = await _location.serviceEnabled();
+      if (!serviceEnabled) {
+        serviceEnabled = await _location.requestService();
+        if (!serviceEnabled) {
+          // Show error if location services are not enabled
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Location services are disabled")),
+          );
+          return;
+        }
+      }
+
+      PermissionStatus permissionGranted = await _location.hasPermission();
+      if (permissionGranted == PermissionStatus.denied) {
+        permissionGranted = await _location.requestPermission();
+        if (permissionGranted != PermissionStatus.granted) {
+          // Show error if permission is denied
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Location permission denied")),
+          );
+          return;
+        }
+      }
+
+      // Fetch the current location
+      _currentLocation = await _location.getLocation();
+      print(
+          'Current location: Lat: ${_currentLocation.latitude}, Lon: ${_currentLocation.longitude}');
+
+      // Convert the latitude and longitude to a city name using the aliased 'geocoding'
+      List<geocoding.Placemark> placemarks =
+          await geocoding.placemarkFromCoordinates(
+              _currentLocation.latitude!, _currentLocation.longitude!);
+
+      if (placemarks.isNotEmpty) {
+        geocoding.Placemark place = placemarks[0];
+        print('City: ${place.locality}');
+
+        // Update the location controller with the city name
+        _locationController.text = place.locality ?? 'Unknown Location';
+      } else {
+        // If no city name found, set a default message
+        _locationController.text = 'Unable to get city';
+      }
+    } catch (e) {
+      print('Error getting location: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error getting location: $e")),
+      );
+    }
+  }
+
+  // **Upload Image to AWS S3 and Store Data in Firestore**
   Future<void> submitReport() async {
     if (_locationController.text.isEmpty ||
         _conditionController.text.isEmpty ||
@@ -166,25 +224,29 @@ class _ReportPageState extends State<ReportPage> {
       final user = await Amplify.Auth.getCurrentUser();
       final userId = user.userId; // This is the Cognito user ID
       print(userId);
-      // **Generate unique file name**
+
+      // If location is empty, fetch current location
+      if (_locationController.text.isEmpty) {
+        await getCurrentLocation(); // Fetch current location
+      }
+
+      // Generate unique file name for image
       String fileName = "reports/${DateTime.now().millisecondsSinceEpoch}.jpg";
 
-// **Step 1: Upload Image to S3**
+      // Step 1: Upload Image to S3
       await Amplify.Storage.uploadFile(
         localFile: AWSFile.fromPath(_selectedImage!.path),
         path: StoragePath.fromString(fileName),
         options: const StorageUploadFileOptions(),
       );
 
-// **Step 2: Get the Public URL**
+      // Step 2: Get the Public URL
       final imageUrl =
           "https://pawrescue-imagesccffd-dev.s3.eu-west-1.amazonaws.com/$fileName";
 
-      // https://pawrescue-imagesccffd-dev.s3.eu-west-1.amazonaws.com/reports/1743334747533.jpg
-
       print("S3 Image URL: $imageUrl");
 
-      // **Step 3: Save Data to Firestore**
+      // Step 3: Save Data to Firestore
       await FirebaseFirestore.instance
           .collection('users')
           .doc(userId)
@@ -198,12 +260,12 @@ class _ReportPageState extends State<ReportPage> {
         'timestamp': FieldValue.serverTimestamp(),
       });
 
-      // **Step 4: Show Success Message**
+      // Step 4: Show Success Message
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Report submitted successfully!")),
       );
 
-      // **Step 5: Clear Fields**
+      // Step 5: Clear Fields
       _locationController.clear();
       _conditionController.clear();
       setState(() {

@@ -19,7 +19,7 @@ class _UserSignUpScreenState extends State<UserSignUp> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false; // Added loading state
-
+  bool _obscurePassword = true;
   bool isValidEmail(String email) {
     final emailRegex =
         RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
@@ -83,11 +83,23 @@ class _UserSignUpScreenState extends State<UserSignUp> {
                           const SizedBox(height: 20),
                           TextFormField(
                             controller: _passwordController,
-                            obscureText: true,
-                            decoration: const InputDecoration(
+                            obscureText: _obscurePassword,
+                            decoration: InputDecoration(
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_off
+                                      : Icons.visibility,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscurePassword = !_obscurePassword;
+                                  });
+                                },
+                              ),
                               labelText: "Password",
-                              labelStyle:
-                                  TextStyle(color: CustomColors.buttonColor1),
+                              labelStyle: const TextStyle(
+                                  color: CustomColors.buttonColor1),
                             ),
                             validator: (value) {
                               if (value == null || value.isEmpty) {
@@ -205,7 +217,7 @@ class _UserSignUpScreenState extends State<UserSignUp> {
         }
       } on AuthException catch (e) {
         print(e);
-         ScaffoldMessenger.of(context).showSnackBar(
+        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.message)),
         );
         setState(() {
