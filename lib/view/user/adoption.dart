@@ -13,13 +13,11 @@ class AdoptionPage extends StatelessWidget {
       child: StreamBuilder<QuerySnapshot>(
         stream: _firestore.collectionGroup('reports').snapshots(),
         builder: (context, snapshot) {
-          print('////////');
-          print(snapshot.data!.docs);
+          
           final completedReports = snapshot.data!.docs.where((doc) {
             return doc['status'] == 'completed';
           }).toList();
-          print('********');
-          print(completedReports);
+          
           // Handle loading state
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());

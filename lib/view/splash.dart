@@ -62,12 +62,12 @@ class _SplashScreenState extends State<SplashScreen> {
               height: 120,
               width: 120,
               decoration: BoxDecoration(
-                color:  const Color.fromRGBO(144, 136, 228, 1),
+                color: const Color.fromRGBO(144, 136, 228, 1),
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 Icons.pets,
-                color: const Color.fromRGBO(144, 136, 228, 1),
+                color: Colors.white,
                 size: 80,
               ),
             ),
@@ -79,7 +79,7 @@ class _SplashScreenState extends State<SplashScreen> {
               style: GoogleFonts.poppins(
                 fontSize: 48,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: Color.fromRGBO(144, 136, 228, 1),
               ),
             ),
             const SizedBox(height: 12),
@@ -89,7 +89,7 @@ class _SplashScreenState extends State<SplashScreen> {
               "Every Paw Matters!",
               style: GoogleFonts.poppins(
                 fontSize: 18,
-                color: Colors.white70,
+                color: Color.fromRGBO(144, 136, 228, 1),
               ),
             ),
           ],
