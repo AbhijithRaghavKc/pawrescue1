@@ -1,0 +1,21 @@
+{
+    "appName": "pawrescue",
+    "roleName": "pinpointLambdaRolee22d34e5",
+    "cloudformationPolicyName": "cloudformationPolicye22d34e5",
+    "cloudWatchPolicyName": "cloudWatchPolicye22d34e5",
+    "pinpointPolicyName": "pinpointPolicye22d34e5",
+    "authPolicyName": "pinpoint_amplify_e22d34e5",
+    "unauthPolicyName": "pinpoint_amplify_e22d34e5",
+    "authRoleName": {
+        "Ref": "AuthRoleName"
+    },
+    "unauthRoleName": {
+        "Ref": "UnauthRoleName"
+    },
+    "authRoleArn": {
+        "Fn::GetAtt": [
+            "AuthRole",
+            "Arn"
+        ]
+    }
+}

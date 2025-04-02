@@ -17,6 +17,21 @@
       },
       "storage": {
         "reportimages": {}
+      },
+      "analytics": {
+        "pawrescue": {},
+        "Pinpoint": {
+          "Name": "pawrescue-dev",
+          "Id": "7f241450d3a74f948b1e73ce9e0f6192",
+          "Region": "eu-west-1"
+        }
+      },
+      "notifications": {
+        "Pinpoint": {
+          "Name": "pawrescue-dev",
+          "Id": "7f241450d3a74f948b1e73ce9e0f6192",
+          "Region": "eu-west-1"
+        }
       }
     }
   }

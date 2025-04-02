@@ -5,6 +5,8 @@ import 'package:pawrescue1/view/const/custom_colors.dart';
 import 'package:pawrescue1/view/user/auth/signin.dart';
 import 'package:intl/intl.dart';
 import 'package:pawrescue1/view/user/drawer/about_us.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class AdminHomeScreen extends StatefulWidget {
   const AdminHomeScreen({super.key});
@@ -126,14 +128,22 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               IconButton(
-                                icon: const Icon(Icons.check,
-                                    color: Colors.green),
-                                onPressed: () => _updateReportStatus(
-                                  report.reference,
-                                  'completed',
-                                  userId,
-                                ),
-                              ),
+                                  icon: const Icon(Icons.check,
+                                      color: Colors.green),
+                                  onPressed: () {
+                                    sendEmail("flutterpmna3@gmail.com",
+                                        "Rescue Request Accepted", """Dear,
+
+Your rescue request has been accepted by the admin. Help is on the way. Please stay safe, and keep your phone accessible for further updates.
+
+Best regards,  
+Pawrescue Team""");
+                                    _updateReportStatus(
+                                      report.reference,
+                                      'completed',
+                                      userId,
+                                    );
+                                  }),
                               IconButton(
                                 icon:
                                     const Icon(Icons.close, color: Colors.red),
@@ -661,6 +671,36 @@ class _AdminHomeScreenState extends State<AdminHomeScreen>
           ),
         ),
       );
+    }
+  }
+
+  Future<void> sendEmail(
+      String recipientEmail, String subject, String message) async {
+    final url = Uri.parse(
+        'https://5gjrfn3mik.execute-api.eu-west-1.amazonaws.com/pord/send-email');
+
+    final headers = {
+      'Content-Type': 'application/json',
+      // Add an API key here if required, e.g., 'Authorization': 'Bearer YOUR_API_KEY'
+    };
+
+    final body = jsonEncode({
+      "email": recipientEmail, // Ensure this matches API requirements
+      "subject": subject,
+      "message": message,
+    });
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        print("✅ Email sent successfully: ${response.body}");
+      } else {
+        print(
+            "❌ Failed to send email: ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      print("❗ Error sending email: $e");
     }
   }
 
